@@ -13,6 +13,36 @@ const config = {
   measurementId: "G-8M4X4CD2VS"
 };
 
+export const addCollectionAndDocuments = async(collectionKey, objectToAdd) => {
+  const collectionRef = firestore.collection(collectionKey);
+  
+  const batch = firestore.batch();
+  objectToAdd.forEach(object =>{
+    const newDocRef = collectionRef.doc();
+    batch.set(newDocRef, object);
+  })
+
+  return await batch.commit();
+}
+
+export const convertCollectionsSnapshotToMap = (collections) => {
+  const transformedCollection = collections.docs.map((doc) => {
+    const { title, items } = doc.data();
+
+    return ({
+      routName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items
+    })
+  });
+
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {});
+}
+
 export const createUserProfileDocument = async(userAuth, additonalData) => {
   if (!userAuth) return;
 
